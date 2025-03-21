@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "487919972592",
+    "project_id": "sweet-watch",
+    "storage_bucket": "sweet-watch.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:487919972592:android:a902c320f1e10b5f125235",
+        "android_client_info": {
+          "package_name": "com.example.sweet_watch"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTGBO0ozsqE5O5cKWVUMZmxrYQPEJC5BE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

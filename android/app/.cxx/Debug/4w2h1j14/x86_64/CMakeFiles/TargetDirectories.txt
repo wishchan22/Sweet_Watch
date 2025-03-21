@@ -1,0 +1,2 @@
+C:/Users/ASUS/AndroidStudioProjects/sweet_watch/android/app/.cxx/Debug/4w2h1j14/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/ASUS/AndroidStudioProjects/sweet_watch/android/app/.cxx/Debug/4w2h1j14/x86_64/CMakeFiles/rebuild_cache.dir
