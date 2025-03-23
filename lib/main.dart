@@ -1,8 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sweet_watch/pages/dashboard_page.dart';
 import 'package:sweet_watch/pages/login_page.dart';
+import 'package:sweet_watch/pages/personal_info_page.dart';
 import 'authentication/main_page.dart';
+
 
 void main() async {
 //void main(){
@@ -29,9 +32,29 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: MainPage(),
+      //home: PersonalInfoPage(),
+      //home: DashboardPage(),
+
+      theme: ThemeData(
+        useMaterial3: true, // Ensures Material 3 support
+        colorScheme: const ColorScheme(
+          brightness: Brightness.light,
+          primary: Color(0xFF2D336B), // Deep blue
+          onPrimary: Color(0xFFFFFFFF),
+          secondary: Color(0xFF56B870), // Green
+          onSecondary: Color(0xFFFFFFFF),
+          error: Color(0xFFD32F2F),
+          onError: Color(0xFFFFFFFF),
+          surface: Color(0xFFFFF2F2), // Light pink
+          onSurface: Color(0xFF2D336B),
+        ),
+      ),
+
     );
+
+
   }
 }

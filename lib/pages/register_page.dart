@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:sweet_watch/pages/personal_info_page.dart';
 
 class RegisterPage extends StatefulWidget {
-
   final VoidCallback showLoginPage;
   const RegisterPage({super.key, required this.showLoginPage});
 
@@ -11,12 +11,17 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final _formKey = GlobalKey<FormState>();
 
-  //Controllers
+  // Controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  // State variable for Firebase error
+  String? _firebaseError;
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -24,183 +29,273 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+
   Future signUp() async {
-    if(passwordConfired()){
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+    if (_formKey.currentState!.validate() && passwordConfirmed() && _passwordController.text.trim().length > 6) {
+      try {
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
-          password: _passwordController.text.trim()
-      );
-    }
+          password: _passwordController.text.trim(),
+        );
+        print('User registered successfully!');
 
+        // Navigate to PersonalInfoPage
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => PersonalInfoPage()),
+        );
+
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'email-already-in-use') {
+          // Set the Firebase error message
+          setState(() {
+            _firebaseError = 'Email is already in use';
+          });
+          // Trigger form validation to display the error
+          _formKey.currentState!.validate();
+        }
+        print('Firebase Auth Error: ${e.code} - ${e.message}');
+      } catch (e) {
+        print('Unexpected error: $e');
+      }
+    }
   }
 
-  bool passwordConfired(){
-    if(_passwordController.text.trim() == _confirmPasswordController.text.trim()){
-      return true;
-    }else{
-      return false;
-    }
+  bool passwordConfirmed() {
+    return _passwordController.text.trim() == _confirmPasswordController.text.trim();
   }
+
+  String? emailValidator(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Email is required';
+    }
+    // Email validation regex
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    if (!emailRegex.hasMatch(value.trim())) {
+      return 'Enter a valid email';
+    }
+
+    // Check if there's a Firebase error message
+    if (_firebaseError != null) {
+      return _firebaseError;
+    }
+    return null;
+  }
+
+  String? passwordValidator(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Password is required';
+    }
+    if (value.trim().length < 6) {
+      return 'Password must be at least 6 characters long';
+    }
+    return null;
+  }
+
+  String? confirmPasswordValidator(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please confirm your password';
+    }
+    if (value.trim() != _passwordController.text.trim()) {
+      return 'Passwords do not match';
+    }
+    return null;
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Color(0xFFFFF2F2),
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            child: Column(
-              children: [
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  SizedBox(height: 230.0),
 
-                SizedBox(height: 230.0),
-
-                Text(
-                  'Sign up',
-                  style: TextStyle(
-                    color: Color(0xFF2D336B), // Primary color
-                    fontSize: 24.0, // Title size
-                    fontWeight: FontWeight.bold, // Bold text
-                  ),
-                ),
-                SizedBox(height: 30),
-
-                //Email textfield
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Color(0xFFFFF2F2),
-                      border: Border.all(color: Color(0xFF2D336B)),
-                      borderRadius: BorderRadius.circular(12),
+                  Text(
+                    'Sign up',
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                      fontSize: 24.0,
+                      fontWeight: FontWeight.bold,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: TextField(
-                        controller: _emailController,
-                        style: TextStyle(color: Color(0xFF2D336B)),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Enter Email', // Optional placeholder
-                          hintStyle: TextStyle(color: Color(0xFFA9B5DF)),
+                  ),
+                  SizedBox(height: 30),
+
+                  // Email textformfield
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: TextFormField(
+                      controller: _emailController,
+                      style: TextStyle(color: colorScheme.primary),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.primary),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.primary),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.error),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        hintText: 'Enter Email',
+                        hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)),
+                        //errorStyle: TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                      validator: (value) => emailValidator(value), // Use the validator
+                      onChanged: (value) {
+                        // Reset the Firebase error when the email changes
+                        setState(() {
+                          _firebaseError = null;
+                        });
+                      },
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
+
+                  // Password textformfield
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: TextFormField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      style: TextStyle(color: colorScheme.primary),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.primary),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.primary),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.error),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        hintText: 'Enter Password',
+                        hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)),
+                      ),
+                      validator: passwordValidator,
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
+
+                  // Confirm password textformfield
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: TextFormField(
+                      controller: _confirmPasswordController,
+                      obscureText: true,
+                      style: TextStyle(color: colorScheme.primary),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.primary),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.primary),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.error),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        hintText: 'Confirm Password',
+                        hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)),
+                      ),
+                      validator: confirmPasswordValidator,
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
+
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: signUp,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                        padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 20),
-
-                //Password textfield
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Color(0xFFFFF2F2),
-                      border: Border.all(color: Color(0xFF2D336B)),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: TextField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        style: TextStyle(color: Color(0xFF2D336B)),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Enter Password', // Optional placeholder
-                          hintStyle: TextStyle(color: Color(0xFFA9B5DF)),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 20),
-
-                // Confirm password textfield
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Color(0xFFFFF2F2),
-                      border: Border.all(color: Color(0xFF2D336B)),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: TextField(
-                        controller: _confirmPasswordController,
-                        obscureText: true,
-                        style: TextStyle(color: Color(0xFF2D336B)),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Confirm Password', // Optional placeholder
-                          hintStyle: TextStyle(color: Color(0xFFA9B5DF)),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 20),
-
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () async {
-
-                      signUp();
-
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF2D336B), // Button color
-                      foregroundColor: Colors.white, // Text color
-                      padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0), // Button padding
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0), // Rounded corners
-                      ),
-                    ),
-                    child: Text(
-                      'Sign up',
-                      style: TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 30),
-
-                // not a member, register option
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'I am a member!',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: widget.showLoginPage,
                       child: Text(
-                        ' Login now',
+                        'Sign Up',
                         style: TextStyle(
-                          color: Colors.blue,
+                          fontSize: 16.0,
                           fontWeight: FontWeight.bold,
-
                         ),
                       ),
                     ),
+                  ),
 
-                  ],
-                )
+                  SizedBox(height: 30),
 
-
-              ],
+                  // Not a member, register option
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'I am a member!',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: widget.showLoginPage,
+                        child: Text(
+                          ' Login now',
+                          style: TextStyle(
+                            color: colorScheme.secondary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-
       ),
     );
   }
