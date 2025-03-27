@@ -41,6 +41,7 @@ dependencies:
   pie_chart: ^5.0.0
   intl: ^0.18.0
   syncfusion_flutter_charts: ^20.4.48
+  http: ^1.3.0
 
 dev_dependencies:
   flutter_test:

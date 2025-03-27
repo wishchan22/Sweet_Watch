@@ -136,6 +136,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       controller: _emailController,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        labelText: 'Email',
+                        labelStyle: TextStyle(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
                         border: OutlineInputBorder(
                           borderSide: BorderSide(color: colorScheme.primary),
                           borderRadius: BorderRadius.circular(12),
@@ -156,9 +160,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           borderSide: BorderSide(color: colorScheme.primary, width: 2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        hintText: 'Enter Email',
-                        hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)),
-                        //errorStyle: TextStyle(color: Colors.red, fontSize: 12),
                       ),
                       validator: (value) => emailValidator(value), // Use the validator
                       onChanged: (value) {
@@ -180,6 +181,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       obscureText: true,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        labelText: 'Password',
+                        labelStyle: TextStyle(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
                         border: OutlineInputBorder(
                           borderSide: BorderSide(color: colorScheme.primary),
                           borderRadius: BorderRadius.circular(12),
@@ -200,8 +205,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           borderSide: BorderSide(color: colorScheme.primary, width: 2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        hintText: 'Enter Password',
-                        hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)),
                       ),
                       validator: passwordValidator,
                     ),
@@ -217,6 +220,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       obscureText: true,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        labelStyle: TextStyle(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
                         border: OutlineInputBorder(
                           borderSide: BorderSide(color: colorScheme.primary),
                           borderRadius: BorderRadius.circular(12),
@@ -237,8 +244,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           borderSide: BorderSide(color: colorScheme.primary, width: 2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        hintText: 'Confirm Password',
-                        hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)),
                       ),
                       validator: confirmPasswordValidator,
                     ),

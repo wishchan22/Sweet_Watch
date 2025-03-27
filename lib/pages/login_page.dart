@@ -39,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       } catch (e) {
@@ -47,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('An unexpected error occurred. Please try again.'),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -113,6 +113,10 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _emailController,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        labelText: 'Email',
+                        labelStyle: TextStyle(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
                         border: OutlineInputBorder(
                           borderSide: BorderSide(color: colorScheme.primary),
                           borderRadius: BorderRadius.circular(12),
@@ -133,8 +137,6 @@ class _LoginPageState extends State<LoginPage> {
                           borderSide: BorderSide(color: colorScheme.primary, width: 2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        hintText: 'Enter Email',
-                        hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)),
                         errorStyle: TextStyle(color: colorScheme.error, fontSize: 12),
                       ),
                       validator: emailValidator,
@@ -151,6 +153,10 @@ class _LoginPageState extends State<LoginPage> {
                       obscureText: true,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        labelText: 'Password',
+                        labelStyle: TextStyle(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
                         border: OutlineInputBorder(
                           borderSide: BorderSide(color: colorScheme.primary),
                           borderRadius: BorderRadius.circular(12),
@@ -171,9 +177,7 @@ class _LoginPageState extends State<LoginPage> {
                           borderSide: BorderSide(color: colorScheme.primary, width: 2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        hintText: 'Enter Password',
-                        hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)),
-                        errorStyle: TextStyle(color: Colors.red, fontSize: 12),
+                        errorStyle: TextStyle(color: colorScheme.error, fontSize: 12),
                       ),
                       validator: passwordValidator,
                     ),

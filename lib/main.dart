@@ -2,8 +2,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sweet_watch/pages/dashboard_page.dart';
+import 'package:sweet_watch/pages/food_search_page.dart';
 import 'package:sweet_watch/pages/login_page.dart';
 import 'package:sweet_watch/pages/personal_info_page.dart';
+import 'package:sweet_watch/pages/profile_page.dart';
 import 'authentication/main_page.dart';
 
 
@@ -35,8 +37,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: MainPage(),
-      //home: PersonalInfoPage(),
-      //home: DashboardPage(),
 
       theme: ThemeData(
         useMaterial3: true, // Ensures Material 3 support
@@ -48,7 +48,8 @@ class MyApp extends StatelessWidget {
           onSecondary: Color(0xFFFFFFFF),
           error: Color(0xFFD32F2F),
           onError: Color(0xFFFFFFFF),
-          surface: Color(0xFFFFF2F2), // Light pink
+          //surface: Color(0xFFFFF2F2),
+          surface: Color(0xFFE0F2F0),
           onSurface: Color(0xFF2D336B),
         ),
       ),

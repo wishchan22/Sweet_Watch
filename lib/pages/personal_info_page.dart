@@ -147,6 +147,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                       controller: _nameController,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        labelText: 'Name',
+                        labelStyle: TextStyle(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
                         border: OutlineInputBorder(
                           borderSide: BorderSide(color: colorScheme.primary),
                           borderRadius: BorderRadius.circular(12),
@@ -167,8 +171,6 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                           borderSide: BorderSide(color: colorScheme.primary, width: 2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        hintText: 'Enter Name',
-                        hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6)),
                         //errorStyle: TextStyle(color: Colors.red, fontSize: 12),
                       ),
                       validator: nameValidator,
@@ -184,6 +186,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                       controller: _ageController,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        labelText: 'Age',
+                        labelStyle: TextStyle(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
                         border: OutlineInputBorder(
                           borderSide: BorderSide(color: colorScheme.primary),
                           borderRadius: BorderRadius.circular(12),
@@ -222,7 +228,12 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                       controller: _heightController,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        labelText: 'Height',
+                        labelStyle: TextStyle(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
                         border: OutlineInputBorder(
+
                           borderSide: BorderSide(color: colorScheme.primary),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -260,6 +271,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                       controller: _weightController,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        labelText: 'Weight',
+                        labelStyle: TextStyle(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
                         border: OutlineInputBorder(
                           borderSide: BorderSide(color: colorScheme.primary),
                           borderRadius: BorderRadius.circular(12),
@@ -339,8 +354,8 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   ElevatedButton(
                     onPressed: next,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF2D336B), // Button color
-                      foregroundColor: Colors.white, // Text color
+                      backgroundColor: Theme.of(context).colorScheme.primary, // Button color
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary, // Text color
                       padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0), // Button padding
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0), // Rounded corners
