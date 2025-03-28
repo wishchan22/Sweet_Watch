@@ -92,7 +92,11 @@ class _ProfilePageState extends State<ProfilePage> {
             onPressed: () => Navigator.pop(context, false),
             child: Text('Cancel'),
           ),
-          TextButton(
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: Text('Confirm'),
           ),
