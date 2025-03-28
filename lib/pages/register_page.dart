@@ -37,6 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
   // Function to handle user registration
   Future signUp() async {
 
+
     // Validate form and check password confirmation
     if (_formKey.currentState!.validate() && passwordConfirmed() && _passwordController.text.trim().length > 6) {
       try {
