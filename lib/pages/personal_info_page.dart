@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dashboard_page.dart';
+
+// PersonalInfoPage is a StatefulWidget that collects user's personal information
 class PersonalInfoPage extends StatefulWidget {
 
   const PersonalInfoPage({super.key});
@@ -11,8 +13,10 @@ class PersonalInfoPage extends StatefulWidget {
 
 class _PersonalInfoPageState extends State<PersonalInfoPage> {
 
+  // Form key for validation
   final _formKey = GlobalKey<FormState>();
 
+  // Controllers for text fields
   final _nameController = TextEditingController();
   final _ageController = TextEditingController();
   final _heightController = TextEditingController();
@@ -20,11 +24,17 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   String gender = 'female'; // Default gender
 
 
-  // Function to save personal info to Firestore
+  // Function to save personal info to Firestore database
   Future<void> savePersonalInfo(String name, int age, double height, double weight, String gender) async {
+
+    // Get current user
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final email = user.email; // Use email as the document ID
+
+      // Use email as the document ID
+      final email = user.email;
+
+      // Save data to Firestore database under 'users' collection
       await FirebaseFirestore.instance.collection('users').doc(email).set({
         'name': name,
         'age': age,
@@ -33,7 +43,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
         'gender': gender,
       });
 
-      // Navigate to DashboardPage
+      // Navigate to DashboardPage after saving
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => DashboardPage()),
@@ -41,16 +51,18 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     }
   }
 
-  void next () async {
+  // Function called when Next button is pressed
+  void goToRegisterPage () async {
     if (_formKey.currentState!.validate()){
       print('next done');
+
       // Get the values from the text fields
       String name = _nameController.text;
       int age = int.parse(_ageController.text);
       double height = double.parse(_heightController.text);
       double weight = double.parse(_weightController.text);
 
-      // Save personal info to Firestore
+      // Save personal info to Firestore database
       await savePersonalInfo(name, age, height, weight, gender);
 
     }
@@ -61,12 +73,15 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
 
   @override
   void dispose() {
+
+    // Clean up controllers when widget is disposed
     _ageController.dispose();
     _heightController.dispose();
     _weightController.dispose();
     super.dispose();
   }
 
+  // Validator for name field
   String? nameValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Name is required';
@@ -74,7 +89,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     return null;
   }
 
-  // Age validator
+  // Validator for age field
   String? ageValidator(String? value) {
     if (value == null || value.trim().isEmpty || int.tryParse(value) == null) {
       return 'Please enter a valid number for age';
@@ -88,7 +103,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     return null;
   }
 
-  // Height validator
+  // Validator for height field
   String? heightValidator(String? value) {
     if (value == null || value.trim().isEmpty || double.tryParse(value) == null) {
       return 'Please enter a valid number for height';
@@ -102,7 +117,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     return null;
   }
 
-  // Weight validator
+  // Validator for weight field
   String? weightValidator(String? value) {
     if (value == null || value.trim().isEmpty || double.tryParse(value) == null) {
       return 'Please enter a valid number for weight';
@@ -133,6 +148,11 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
               key: _formKey,
               child: Column(
                 children: [
+
+                  Image.asset("images/logo.jpg",
+                    width: 200,
+                    height: 200,
+                  ),
                   SizedBox(height: 50),
                   Text(
                     'Please Enter Your Personal Info',
@@ -140,13 +160,17 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   ),
                   SizedBox(height: 20),
 
-                  // Name textFormField
+                  // Name TextFormField
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: TextFormField(
                       controller: _nameController,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.person_outlined,
+                          color: colorScheme.secondary,
+                        ),
                         labelText: 'Name',
                         labelStyle: TextStyle(
                           color: colorScheme.onSurface.withOpacity(0.6),
@@ -178,7 +202,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   ),
                   SizedBox(height: 20),
 
-                  // Age TextField
+                  // Age TextFormField
 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -186,6 +210,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                       controller: _ageController,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.calendar_today_outlined,
+                          color: colorScheme.secondary,
+                        ),
                         labelText: 'Age',
                         labelStyle: TextStyle(
                           color: colorScheme.onSurface.withOpacity(0.6),
@@ -228,6 +256,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                       controller: _heightController,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.height_outlined,
+                          color: colorScheme.secondary,
+                        ),
                         labelText: 'Height',
                         labelStyle: TextStyle(
                           color: colorScheme.onSurface.withOpacity(0.6),
@@ -263,7 +295,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
 
                   SizedBox(height: 20),
 
-                  // Weight textfield
+                  // Weight TextFormField
 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -271,6 +303,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                       controller: _weightController,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.scale_outlined,
+                          color: colorScheme.secondary,
+                        ),
                         labelText: 'Weight',
                         labelStyle: TextStyle(
                           color: colorScheme.onSurface.withOpacity(0.6),
@@ -314,6 +350,8 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
+
+                            // Female option
                             Row(
                               children: [
                                 Radio<String>(
@@ -329,6 +367,8 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                                 Text('Female', style: TextStyle(color: colorScheme.onSurface)),
                               ],
                             ),
+
+                            // Male option
                             Row(
                               children: [
                                 Radio<String>(
@@ -351,12 +391,13 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   ),
                   SizedBox(height: 30),
 
+                  // Next button
                   ElevatedButton(
-                    onPressed: next,
+                    onPressed: goToRegisterPage,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary, // Button color
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary, // Text color
-                      padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0), // Button padding
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0), // Rounded corners
                       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+// FoodSearchPage allows users to search for foods and add them to their log
 class FoodSearchPage extends StatefulWidget {
   final Function(String, double, double) onSugarAdded;
 
@@ -12,28 +13,42 @@ class FoodSearchPage extends StatefulWidget {
 }
 
 class _FoodSearchPageState extends State<FoodSearchPage> {
+
+  // Controller for search input field
   final _searchController = TextEditingController();
+
+  // Stores search results from API
   List<Map<String, dynamic>> _searchResults = [];
+
+  // Loading state flag
   bool _isLoading = false;
 
+  // Function to search for food using OpenFoodFacts API
   Future<void> _searchFood() async {
     final query = _searchController.text.trim();
     if (query.isEmpty) return;
 
     setState(() {
       _isLoading = true;
+
+      // Clear previous results
       _searchResults = [];
     });
 
     try {
+
+      // Make GET request to OpenFoodFacts API
       final response = await http.get(
         Uri.parse('https://world.openfoodfacts.org/cgi/search.pl?search_terms=$query&json=1'),
       );
 
       if (response.statusCode == 200) {
+
+        // Parse JSON response
         final data = json.decode(response.body);
         final List<dynamic> products = data["products"];
 
+        // Transform API data into our format
         setState(() {
           _searchResults = products.map((product) {
             return {
@@ -51,11 +66,14 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
       );
     } finally {
       setState(() {
+
+        // Reset loading state
         _isLoading = false;
       });
     }
   }
 
+  // Function to show dialog to enter food quantity
   void _showQuantityDialog(String foodName, double sugarPer100g) {
     final quantityController = TextEditingController();
     final _formKey = GlobalKey<FormState>();
@@ -112,11 +130,8 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
                 ),
 
                 SizedBox(height: 20),
-                /*Text(
-                  'Sugar per 100g: ${sugarPer100g.toStringAsFixed(2)}g',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                ),*/
 
+                // Display sugar content per 100g
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start, // Align text to the left
                   children: [
@@ -153,10 +168,16 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
+
+                      // Calculate total sugar based on quantity
                       final quantity = double.parse(quantityController.text.trim());
                       final sugarContent = (sugarPer100g / 100) * quantity;
+
+                      // Call parent callback with food details
                       widget.onSugarAdded(foodName,sugarContent, quantity);
-                      Navigator.pop(context); // Close the dialog
+
+                      // Close the dialog
+                      Navigator.pop(context);
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -177,7 +198,7 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,  // Primary color for AppBar
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
         title: Text('Search Food by Name',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -190,6 +211,7 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
           children: [
             SizedBox(height: 40),
 
+            // Search input field
             TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -201,9 +223,13 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
                   color: Theme.of(context).colorScheme.secondary,
                 ),
               ),
+
+              // Search on enter key
               onSubmitted: (value) => _searchFood(),
             ),
             SizedBox(height: 20),
+
+            // Show loading indicator or search results
             _isLoading
                 ? Center(child: CircularProgressIndicator(
               color: Theme.of(context).colorScheme.secondary,
@@ -217,7 +243,6 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
                   return ListTile(
 
                     title: Text(product['name']),
-                    //subtitle: Text('Sugar: ${product['sugarPer100g']}g per 100g'),
                     onTap: () => _showQuantityDialog(product['name'],product['sugarPer100g']),
                   );
                 },

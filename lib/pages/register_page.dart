@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:sweet_watch/pages/personal_info_page.dart';
 
+// RegisterPage handles user registration with email and password
 class RegisterPage extends StatefulWidget {
   final VoidCallback showLoginPage;
   const RegisterPage({super.key, required this.showLoginPage});
@@ -11,41 +12,51 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+
+  // Form key for validation
   final _formKey = GlobalKey<FormState>();
 
-  // Controllers
+  // Controllers for text fields
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  // State variable for Firebase error
+  // State variable for Firebase error messages
   String? _firebaseError;
 
   @override
   void dispose() {
+
+    // Clean up controllers when widget is disposed
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
-
+  // Function to handle user registration
   Future signUp() async {
+
+    // Validate form and check password confirmation
     if (_formKey.currentState!.validate() && passwordConfirmed() && _passwordController.text.trim().length > 6) {
       try {
+
+        // Create user with Firebase Auth
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
         print('User registered successfully!');
 
-        // Navigate to PersonalInfoPage
+        // Navigate to PersonalInfoPage after successful registration
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => PersonalInfoPage()),
         );
 
       } on FirebaseAuthException catch (e) {
+
+        // Handle specific Firebase Auth errors
         if (e.code == 'email-already-in-use') {
           // Set the Firebase error message
           setState(() {
@@ -61,10 +72,12 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+  // Function to check if the confirmation password matches with the password entered earlier
   bool passwordConfirmed() {
     return _passwordController.text.trim() == _confirmPasswordController.text.trim();
   }
 
+  // Validate email format and check for Firebase errors
   String? emailValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Email is required';
@@ -82,6 +95,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return null;
   }
 
+  // Validate password meets requirements
   String? passwordValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Password is required';
@@ -92,6 +106,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return null;
   }
 
+  // Validate password confirmation matches
   String? confirmPasswordValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Please confirm your password';
@@ -117,8 +132,15 @@ class _RegisterPageState extends State<RegisterPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  SizedBox(height: 230.0),
 
+                  // App logo
+                  Image.asset("images/logo.jpg",
+                    width: 200,  // Set the width
+                    height: 200,
+                  ),
+                  SizedBox(height: 30.0),
+
+                  // Page title
                   Text(
                     'Sign up',
                     style: TextStyle(
@@ -129,13 +151,17 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   SizedBox(height: 30),
 
-                  // Email textformfield
+                  // Email TextFormField
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: TextFormField(
                       controller: _emailController,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.email_outlined,
+                          color: colorScheme.secondary,
+                        ),
                         labelText: 'Email',
                         labelStyle: TextStyle(
                           color: colorScheme.onSurface.withOpacity(0.6),
@@ -163,7 +189,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       validator: (value) => emailValidator(value), // Use the validator
                       onChanged: (value) {
-                        // Reset the Firebase error when the email changes
+                        // Clear Firebase error when user edits email
                         setState(() {
                           _firebaseError = null;
                         });
@@ -173,7 +199,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   SizedBox(height: 20),
 
-                  // Password textformfield
+                  // Password TextFormField
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: TextFormField(
@@ -181,6 +207,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       obscureText: true,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.lock_outlined,
+                          color: colorScheme.secondary,
+                        ),
                         labelText: 'Password',
                         labelStyle: TextStyle(
                           color: colorScheme.onSurface.withOpacity(0.6),
@@ -212,14 +242,20 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   SizedBox(height: 20),
 
-                  // Confirm password textformfield
+                  // Confirm password TextFormField
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: TextFormField(
                       controller: _confirmPasswordController,
+
+                      // Hide password characters
                       obscureText: true,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.lock_outlined,
+                          color: colorScheme.secondary,
+                        ),
                         labelText: 'Confirm Password',
                         labelStyle: TextStyle(
                           color: colorScheme.onSurface.withOpacity(0.6),
@@ -251,6 +287,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   SizedBox(height: 20),
 
+                  // Sign up button
                   Center(
                     child: ElevatedButton(
                       onPressed: signUp,
@@ -263,7 +300,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       ),
                       child: Text(
-                        'Sign Up',
+                        'Sign up',
                         style: TextStyle(
                           fontSize: 16.0,
                           fontWeight: FontWeight.bold,
@@ -274,7 +311,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   SizedBox(height: 30),
 
-                  // Not a member, register option
+                  // log in prompt
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

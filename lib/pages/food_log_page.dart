@@ -5,22 +5,33 @@ import 'package:intl/intl.dart';
 import 'food_search_page.dart';
 import 'dashboard_page.dart';
 
+// FoodLogPage displays a list of food entries for the selected date
 class FoodLogPage extends StatefulWidget {
   @override
   _FoodLogPageState createState() => _FoodLogPageState();
 }
 
 class _FoodLogPageState extends State<FoodLogPage> {
+
+  // State variables
+  // Currently viewed date
   DateTime _currentDate = DateTime.now();
+
+  // List of food entries
   List<Map<String, dynamic>> _foodLogs = [];
+
+  // Loading state flag
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+
+    // Load food entries when widget initializes
     _fetchFoodLogs();
   }
 
+  // Function to fetch food logs from Firestore database for the current date
   Future<void> _fetchFoodLogs() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null || user.email == null) return;
@@ -28,6 +39,8 @@ class _FoodLogPageState extends State<FoodLogPage> {
     setState(() => _isLoading = true);
 
     try {
+
+      // Query food entries for current user and date, sorted by timestamp
       final querySnapshot = await FirebaseFirestore.instance
           .collection('food_intake')
           .where('userId', isEqualTo: user.email)
@@ -35,6 +48,7 @@ class _FoodLogPageState extends State<FoodLogPage> {
           .orderBy('timestamp', descending: true)
           .get();
 
+      // Transform documents into list of food log maps
       setState(() {
         _foodLogs = querySnapshot.docs.map((doc) {
           final data = doc.data();
@@ -56,25 +70,51 @@ class _FoodLogPageState extends State<FoodLogPage> {
     }
   }
 
+
+  //Function to add a new food entry to Firestore database
   Future<void> _addFoodLog(String foodName, double sugarAmount, double servingSize) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null || user.email == null) return;
 
-    final newItem = {
-      'userId': user.email!,
-      'foodName': foodName,
-      'sugarAmount': sugarAmount,
-      'servingSize': servingSize,
-      'timestamp': Timestamp.now(),
-      'date': _formatDate(_currentDate),
-    };
-
     try {
-      await FirebaseFirestore.instance
-          .collection('food_intake')
-          .add(newItem);
 
+      // Use batch write for atomic updates
+      final batch = FirebaseFirestore.instance.batch();
+
+      // Add to food_intake collection
+      final foodDocRef = FirebaseFirestore.instance.collection('food_intake').doc();
+      batch.set(foodDocRef, {
+        'userId': user.email!,
+        'foodName': foodName,
+        'sugarAmount': sugarAmount,
+        'servingSize': servingSize,
+        'timestamp': Timestamp.now(),
+        'date': _formatDate(_currentDate),
+      });
+
+      // Update consumed_sugar collection
+      final sugarDocRef = FirebaseFirestore.instance
+          .collection('consumed_sugar')
+          .doc('${user.email}_${_formatDate(_currentDate)}');
+
+      // Get current sugar value
+      final sugarDoc = await sugarDocRef.get();
+      final currentSugar = sugarDoc.exists ? (sugarDoc['consumed_sugar'] ?? 0.0).toDouble() : 0.0;
+
+      // Update with new total
+      batch.set(sugarDocRef, {
+        'consumed_sugar': currentSugar + sugarAmount,
+        'date': _formatDate(_currentDate),
+        'userId': user.email,
+      }, SetOptions(merge: true));
+
+      // Execute both operations atomically
+      await batch.commit();
+
+      // Refresh the food log list
       await _fetchFoodLogs();
+
+      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('$foodName added successfully!')),
       );
@@ -86,30 +126,41 @@ class _FoodLogPageState extends State<FoodLogPage> {
     }
   }
 
+
+  // Function to delete a food entry from Firestore firebase
   Future<void> _deleteFoodLog(String docId, double sugarAmount) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null || user.email == null) return;
 
     try {
+
+      // Use batch write for atomic updates
       final batch = FirebaseFirestore.instance.batch();
 
+      // Delete food entry
       final foodDocRef = FirebaseFirestore.instance.collection('food_intake').doc(docId);
       batch.delete(foodDocRef);
 
+      // Update consumed_sugar collection
       final sugarDocRef = FirebaseFirestore.instance
           .collection('consumed_sugar')
           .doc('${user.email}_${_formatDate(_currentDate)}');
 
+      // Get current sugar value
       final sugarDoc = await sugarDocRef.get();
       final currentSugar = sugarDoc.exists ? (sugarDoc['consumed_sugar'] ?? 0.0).toDouble() : 0.0;
 
+      // Update with reduced total
       batch.set(sugarDocRef, {
         'consumed_sugar': currentSugar - sugarAmount,
         'date': _formatDate(_currentDate),
         'userId': user.email,
       }, SetOptions(merge: true));
 
+      // Execute both operations atomically
       await batch.commit();
+
+      // Refresh the list
       await _fetchFoodLogs();
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -123,6 +174,7 @@ class _FoodLogPageState extends State<FoodLogPage> {
     }
   }
 
+  // Function to Navigate to previous day
   void _goToPreviousDay() {
     setState(() {
       _currentDate = _currentDate.subtract(Duration(days: 1));
@@ -131,6 +183,7 @@ class _FoodLogPageState extends State<FoodLogPage> {
     });
   }
 
+  // Function to navigate to next day when in past dates
   void _goToNextDay() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -144,33 +197,44 @@ class _FoodLogPageState extends State<FoodLogPage> {
     }
   }
 
+  // Format date as yyyy-MM-dd string
   String _formatDate(DateTime date) {
     return DateFormat('yyyy-MM-dd').format(date);
   }
 
+  // Function to show confirmation dialog before deleting food entry
   Future<void> _showDeleteConfirmation(String docId, double sugarAmount) async {
     final shouldDelete = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delete Food Entry'),
-        content: Text('Are you sure you want to delete this item?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Delete', style: TextStyle(color: Theme.of(context).colorScheme.error)),
-          ),
-        ],
-      ),
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+
+        return AlertDialog(
+          title: Text('Delete Food Entry'),
+          content: Text('Are you sure you want to delete this item?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+              ),
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
     );
 
     if (shouldDelete == true) {
       await _deleteFoodLog(docId, sugarAmount);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -209,6 +273,8 @@ class _FoodLogPageState extends State<FoodLogPage> {
         ),
       )
           : ListView.builder(
+
+        // List of food entries
         itemCount: _foodLogs.length,
         itemBuilder: (context, index) {
           final log = _foodLogs[index];
@@ -224,6 +290,8 @@ class _FoodLogPageState extends State<FoodLogPage> {
                 title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+
+                    // Food name
                     Text(
                       log['foodName'],
                       style: TextStyle(
@@ -232,15 +300,31 @@ class _FoodLogPageState extends State<FoodLogPage> {
                         color: colorScheme.primary,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    SizedBox(height: 10),
+
+                    // Serving size
                     Text(
                       'Serving: ${log['servingSize']}g',
                       style: TextStyle(
                         fontSize: 14,
-                        color: colorScheme.onSurface.withOpacity(0.8),
+                        color: colorScheme.onSurface,
                       ),
                     ),
+
                     SizedBox(height: 4),
+
+                    // Time consumed
+                    Text(
+                      'Time: $time',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+
+                    SizedBox(height: 4),
+
+                    // Sugar amount
                     Text(
                       'Sugar: ${log['sugarAmount'].toStringAsFixed(1)}g',
                       style: TextStyle(
@@ -249,16 +333,10 @@ class _FoodLogPageState extends State<FoodLogPage> {
                         color: colorScheme.secondary,
                       ),
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Time: $time',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                    ),
                   ],
                 ),
+
+                // Delete button
                 trailing: IconButton(
                   icon: Icon(Icons.delete, color: colorScheme.error),
                   onPressed: () => _showDeleteConfirmation(log['id'], log['sugarAmount']),
@@ -269,8 +347,12 @@ class _FoodLogPageState extends State<FoodLogPage> {
           );
         },
       ),
+
+      // Bottom navigation bar
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
+
+        // Log page is active
+        currentIndex: 2,
         backgroundColor: colorScheme.surface,
         selectedItemColor: colorScheme.secondary,
         unselectedItemColor: colorScheme.primary,
@@ -280,32 +362,34 @@ class _FoodLogPageState extends State<FoodLogPage> {
             icon: Icon(Icons.dashboard),
             label: 'Dashboard',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'Log',
-          ),
+
           BottomNavigationBarItem(
             icon: Icon(Icons.add),
             label: 'Add Food',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.show_chart),
-            label: 'Trends',
+            icon: Icon(Icons.list),
+            label: 'Log',
           ),
+
         ],
         onTap: (index) {
           if (index == 0) {
+
+            // Navigate to Dashboard
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => DashboardPage()),
             );
-          } else if (index == 2) {
+          } else if (index == 1) {
+
+            // Navigate to Add Food page
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => FoodSearchPage(
-                  onSugarAdded: (name, sugar, serving) {
-                    _addFoodLog(name, sugar, serving);
+                  onSugarAdded: (name, sugar, serving) async {
+                    await _addFoodLog(name, sugar, serving);
                   },
                 ),
               ),

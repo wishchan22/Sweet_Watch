@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sweet_watch/authentication/auth_page.dart';
-import 'package:sweet_watch/pages/login_page.dart';
-import 'package:sweet_watch/pages/register_page.dart';
 
+// ProfilePage displays and allows editing of user profile information
 class ProfilePage extends StatefulWidget {
+
+  // Callback when profile is updated
   final VoidCallback? onProfileUpdated;
 
   const ProfilePage({Key? key, this.onProfileUpdated}) : super(key: key);
@@ -15,9 +16,12 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+
+  // Firebase instances
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // User profile data variables
   late String _name;
   late int _age;
   late double _height;
@@ -25,17 +29,20 @@ class _ProfilePageState extends State<ProfilePage> {
   late String _email;
   late String _gender;
 
+  // Editing state flags
   bool _isEditingName = false;
   bool _isEditingAge = false;
   bool _isEditingHeight = false;
   bool _isEditingWeight = false;
   bool _isEditingGender = false;
 
+  // Text editing controllers
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
 
+  // Loading state flag
   bool _isLoading = true;
 
   @override
@@ -51,6 +58,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
       if (userDoc.exists) {
         setState(() {
+
+          // Set user data from Firestore document
           _name = userDoc['name'] ?? 'Not set';
           _age = userDoc['age'] ?? 0;
           _height = userDoc['height']?.toDouble() ?? 0.0;
@@ -58,17 +67,20 @@ class _ProfilePageState extends State<ProfilePage> {
           _email = user.email ?? 'No email';
           _gender = userDoc['gender'] ?? 'male';
 
+          // Initialize controllers with current values
           _nameController.text = _name;
           _ageController.text = _age.toString();
           _heightController.text = _height.toString();
           _weightController.text = _weight.toString();
 
+          // Data loaded, turn off loading state
           _isLoading = false;
         });
       }
     }
   }
 
+  // Function to show confirmation dialog for profile changes that affects the sugar limit value
   Future<bool> _showConfirmationDialog(String fieldName) async {
     return await showDialog<bool>(
       context: context,
@@ -89,6 +101,7 @@ class _ProfilePageState extends State<ProfilePage> {
     ) ?? false;
   }
 
+  // Function to Update user data in Firestore database
   Future<void> _updateUserData() async {
     final User? user = _auth.currentUser;
     if (user != null) {
@@ -101,14 +114,18 @@ class _ProfilePageState extends State<ProfilePage> {
           'gender': _gender,
         });
 
+        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Profile updated successfully!')),
         );
 
+        // Notify parent widget of update if callback provided
         if (widget.onProfileUpdated != null) {
           widget.onProfileUpdated!();
         }
       } catch (e) {
+
+        // Show error message if update fails
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to update profile: $e')),
         );
@@ -133,12 +150,16 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
+            // Email (non-editable)
             _buildProfileItem(
               'Email',
               Text(_email),
               null,
             ),
             Divider(),
+
+            // Name (editable)
             _buildProfileItem(
               'Name',
               _isEditingName ? _buildTextField(_nameController, (value) => _name = value) : Text(_name),
@@ -153,6 +174,8 @@ class _ProfilePageState extends State<ProfilePage> {
               },
             ),
             Divider(),
+
+            // Age (editable with confirmation)
             _buildProfileItem(
               'Age',
               _isEditingAge ? _buildTextField(_ageController, (value) => _age = int.tryParse(value) ?? _age) : Text('$_age years'),
@@ -170,6 +193,8 @@ class _ProfilePageState extends State<ProfilePage> {
               },
             ),
             Divider(),
+
+            // Height (editable with confirmation)
             _buildProfileItem(
               'Height',
               _isEditingHeight ? _buildTextField(_heightController, (value) => _height = double.tryParse(value) ?? _height) : Text('${_height.toStringAsFixed(1)} cm'),
@@ -187,6 +212,8 @@ class _ProfilePageState extends State<ProfilePage> {
               },
             ),
             Divider(),
+
+            // Weight (editable with confirmation)
             _buildProfileItem(
               'Weight',
               _isEditingWeight ? _buildTextField(_weightController, (value) => _weight = double.tryParse(value) ?? _weight) : Text('${_weight.toStringAsFixed(1)} kg'),
@@ -204,6 +231,8 @@ class _ProfilePageState extends State<ProfilePage> {
               },
             ),
             Divider(),
+
+            // Gender (editable dropdown with confirmation)
             _buildProfileItem(
               'Gender',
               _isEditingGender
@@ -235,16 +264,16 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             Divider(),
 
+            // Sign out button
             SizedBox(height: 55),
-
-            Center( // Centering the button
+            Center(
               child: ElevatedButton(
                 onPressed: () async {
                   try {
                     await FirebaseAuth.instance.signOut();
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
-                        builder: (context) => AuthPage(), // Navigate to AuthPage instead of LoginPage
+                        builder: (context) => AuthPage(),
                       ),
                           (Route<dynamic> route) => false,
                     );
@@ -255,8 +284,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary, // Button color
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -268,21 +297,22 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-
-
-
-
           ],
         ),
       ),
     );
   }
 
+  // Helper method to build a profile item row
   Widget _buildProfileItem(String label, Widget valueWidget, VoidCallback? onEditPressed) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
+
+          // Label
           Expanded(
             flex: 2,
             child: Text(
@@ -293,23 +323,32 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
           ),
+
+          // Value widget
           Expanded(
             flex: 3,
             child: valueWidget,
           ),
+
+          // Edit button (if provided)
           if (onEditPressed != null)
             IconButton(
               icon: Icon(
                 _getEditIcon(label),
                 size: 20,
+                color: colorScheme.secondary,
               ),
               onPressed: onEditPressed,
+              style: IconButton.styleFrom(
+                foregroundColor: colorScheme.secondary,
+              ),
             ),
         ],
       ),
     );
   }
 
+  // Helper method to build a text field for editing
   Widget _buildTextField(TextEditingController controller, Function(String) onChanged) {
     return TextField(
       controller: controller,
@@ -324,6 +363,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  // Helper method to get appropriate edit/save icon
   IconData _getEditIcon(String label) {
     if (label == 'Name' && _isEditingName) return Icons.check;
     if (label == 'Age' && _isEditingAge) return Icons.check;

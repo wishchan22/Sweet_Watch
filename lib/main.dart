@@ -1,16 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:sweet_watch/pages/dashboard_page.dart';
-import 'package:sweet_watch/pages/food_search_page.dart';
-import 'package:sweet_watch/pages/login_page.dart';
-import 'package:sweet_watch/pages/personal_info_page.dart';
-import 'package:sweet_watch/pages/profile_page.dart';
 import 'authentication/main_page.dart';
 
 
 void main() async {
-//void main(){
 
   WidgetsFlutterBinding.ensureInitialized();
   if(kIsWeb){
@@ -39,12 +33,13 @@ class MyApp extends StatelessWidget {
       home: MainPage(),
 
       theme: ThemeData(
-        useMaterial3: true, // Ensures Material 3 support
+        useMaterial3: true,
         colorScheme: const ColorScheme(
           brightness: Brightness.light,
           primary: Color(0xFF2D336B), // Deep blue
           onPrimary: Color(0xFFFFFFFF),
-          secondary: Color(0xFF56B870), // Green
+          //secondary: Color(0xFF56B870),
+          secondary: Color(0xFF9C89B8),
           onSecondary: Color(0xFFFFFFFF),
           error: Color(0xFFD32F2F),
           onError: Color(0xFFFFFFFF),

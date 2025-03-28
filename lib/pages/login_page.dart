@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dashboard_page.dart';
 
+// LoginPage is a StatefulWidget that handles user authentication
 class LoginPage extends StatefulWidget {
   final VoidCallback showRegisterPage;
   const LoginPage({super.key, required this.showRegisterPage});
@@ -11,15 +12,20 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+
+  // Key for form validation
   final _formKey = GlobalKey<FormState>();
 
-  // Controllers
+  // Text editing controllers for form fields
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  // Function that handles the sign-in process
   Future signIn() async {
     if (_formKey.currentState!.validate()) {
       try {
+
+        // Attempt to sign in with Firebase Auth
         await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
@@ -27,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
         // After successful sign-in, navigate to DashboardPage
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => DashboardPage()),  // Make sure to replace with your actual DashboardPage widget
+          MaterialPageRoute(builder: (context) => DashboardPage()),
         );
 
       } on FirebaseAuthException catch (e) {
@@ -56,16 +62,19 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
+
+    // Clean up controllers when widget is disposed
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
+  // Validates email input
   String? emailValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Email is required';
     }
-    // Email validation regex
+    // Regular expression for email validation
     final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     if (!emailRegex.hasMatch(value.trim())) {
       return 'Enter a valid email';
@@ -73,6 +82,7 @@ class _LoginPageState extends State<LoginPage> {
     return null;
   }
 
+  // Validates password input
   String? passwordValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Password is required';
@@ -91,11 +101,20 @@ class _LoginPageState extends State<LoginPage> {
         child: Center(
           child: SingleChildScrollView(
             child: Form(
+              // Assign form key
               key: _formKey,
               child: Column(
                 children: [
-                  SizedBox(height: 230.0),
 
+                  // App logo
+                  Image.asset("images/logo.jpg",
+                    width: 200,
+                    height: 200,
+                  ),
+
+                  SizedBox(height: 30.0),
+
+                  // Sign in title
                   Text(
                     'Sign in',
                     style: TextStyle(
@@ -106,13 +125,17 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   SizedBox(height: 30),
 
-                  // Email textfield
+                  // Email TextFormField
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: TextFormField(
                       controller: _emailController,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.email_outlined,
+                          color: colorScheme.secondary,
+                        ),
                         labelText: 'Email',
                         labelStyle: TextStyle(
                           color: colorScheme.onSurface.withOpacity(0.6),
@@ -145,7 +168,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   SizedBox(height: 20),
 
-                  // Password textfield
+                  // Password TextFormField
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: TextFormField(
@@ -153,6 +176,11 @@ class _LoginPageState extends State<LoginPage> {
                       obscureText: true,
                       style: TextStyle(color: colorScheme.primary),
                       decoration: InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.lock_outlined,
+                          color: colorScheme.secondary,
+                        ),
+
                         labelText: 'Password',
                         labelStyle: TextStyle(
                           color: colorScheme.onSurface.withOpacity(0.6),
@@ -185,6 +213,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   SizedBox(height: 20),
 
+                  // Sign in button
                   Center(
                     child: ElevatedButton(
                       onPressed: signIn,
@@ -208,7 +237,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   SizedBox(height: 30),
 
-                  // Not a member, register option
+                  // Registration prompt
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -219,6 +248,8 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       GestureDetector(
+
+                        // Switch to register page
                         onTap: widget.showRegisterPage,
                         child: Text(
                           ' Register now',
